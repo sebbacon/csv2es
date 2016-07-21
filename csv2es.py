@@ -22,7 +22,8 @@ from joblib import Parallel, delayed
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch import bulk_chunks
 from pyelasticsearch import ElasticHttpNotFoundError
-from pyelasticsearch import IndexAlreadyExistsError
+
+from pyelasticsearch.exceptions import ElasticHttpError
 from retrying import retry
 
 
@@ -212,8 +213,11 @@ def cli(index_name, delete_index, mapping_file, settings_file, doc_type,
         else:
             es.create_index(index_name)
         echo('Created new index: ' + index_name, quiet)
-    except IndexAlreadyExistsError:
-        echo('Index ' + index_name + ' already exists', quiet)
+    except ElasticHttpError as e:
+        if e.error['type'] == 'index_already_exists_exception':
+            echo('Index ' + index_name + ' already exists', quiet)
+        else:
+            raise
 
     echo('Using document type: ' + doc_type, quiet)
     if mapping_file:
