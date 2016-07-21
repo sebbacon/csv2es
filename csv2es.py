@@ -55,7 +55,7 @@ def documents_from_file(es, filename, delimiter, quiet):
     def all_docs():
         with open(filename, 'rb') if filename != '-' else sys.stdin as doc:
             # delimited file should include the field names as the first row
-            fieldnames = doc.next().strip().split(delimiter)
+            fieldnames = [x.lower().strip().replace(' ', '_') for x in doc.next().strip().split(delimiter)]
             echo('Using the following ' + str(len(fieldnames)) + ' fields:',
                  quiet)
             for fieldname in fieldnames:
